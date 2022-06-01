@@ -23,7 +23,7 @@ const applyFictitiousAuthorization = (app) => {
 const analyseError = (res, err) => {
   const errorName = err.name;
 
-  if (errorName === "ValidationError") {
+  if (errorName === "ValidationError" || errorName === "BadRequest") {
     return res
       .status(VALIDATION_ERROR_CODE)
       .send({

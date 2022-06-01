@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Описание схемы пользователя
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -19,4 +20,5 @@ const userSchema = new mongoose.Schema({
   }
 });
 
+// Создание и экспорт схемы пользователя
 module.exports = mongoose.model('user', userSchema);

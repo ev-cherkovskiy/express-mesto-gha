@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Описание схемы карточки
 const cardSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -26,4 +27,5 @@ const cardSchema = new mongoose.Schema({
   }
 });
 
+// Создание и экспорт модели карточки
 module.exports = mongoose.model('card', cardSchema);

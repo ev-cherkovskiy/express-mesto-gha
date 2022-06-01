@@ -23,8 +23,14 @@ const deleteCard = (req, res) => {
 const likeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $addToSet: { likes: req.user._id } },
-    { new: true }
+    {
+      $addToSet: { likes: req.user._id }
+    },
+    {
+      new: true,
+      runValidators: true,
+      upsert: true
+    }
   )
     .then(card => res.send({ data: card }))
     .catch(err => analyseError(res, err));
@@ -33,8 +39,14 @@ const likeCard = (req, res) => {
 const unlikeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $pull: { likes: req.user._id } },
-    { new: true }
+    {
+      $pull: { likes: req.user._id }
+    },
+    {
+      new: true,
+      runValidators: true,
+      upsert: true
+    }
   )
     .then(card => res.send({ data: card }))
     .catch(err => analyseError(res, err));

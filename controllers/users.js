@@ -31,7 +31,7 @@ const editProfile = (req, res) => {
     {
       new: true,
       runValidators: true,
-      upsert: true
+      upsert: false
     }
   )
     .then(user => res.send({ data: user }))
@@ -48,7 +48,7 @@ const editAvatar = (req, res) => {
     {
       new: true,
       runValidators: true,
-      upsert: true
+      upsert: false
     }
   )
     .then(user => res.send({ data: user }))

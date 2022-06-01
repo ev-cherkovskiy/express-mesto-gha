@@ -1,7 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
 
-const { applyBodyParser, applyFictitiousAuthorization } = require('./utils/utils');
+const {
+  applyBodyParser,
+  applyFictitiousAuthorization,
+  applyIncorrectPathCheck
+} = require('./utils/utils');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards')
 
@@ -14,6 +18,9 @@ applyBodyParser(app);
 applyFictitiousAuthorization(app);
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
+applyIncorrectPathCheck(app);
+
+
 
 app.listen(PORT, () => {
   console.log(`Приложение запущено на порте ${PORT}`);

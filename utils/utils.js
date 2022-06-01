@@ -8,7 +8,7 @@ const {
 const applyBodyParser = (app) => {
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
-}
+};
 
 const applyFictitiousAuthorization = (app) => {
   app.use((req, res, next) => {
@@ -17,6 +17,16 @@ const applyFictitiousAuthorization = (app) => {
     };
 
     next();
+  });
+};
+
+const applyIncorrectPathCheck = (app) => {
+  app.use((req, res) => {
+    res
+      .status(NOT_FOUND_ERROR_CODE)
+      .send({
+        message: "Данные не найдены"
+      });
   });
 }
 
@@ -50,5 +60,6 @@ const analyseError = (res, err) => {
 module.exports = {
   applyBodyParser,
   applyFictitiousAuthorization,
+  applyIncorrectPathCheck,
   analyseError
 }

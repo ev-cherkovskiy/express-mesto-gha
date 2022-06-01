@@ -8,7 +8,7 @@ const getUsers = (req, res) => {
 };
 
 const getUserById = (req, res) => {
-  User.findById(req.params.userId)
+  User.findById(req.params.userId, { runValidators: true })
     .then(user => res.send({ data: user }))
     .catch(err => analyseError(res, err));
 };

@@ -1,3 +1,4 @@
+const IteratorNext = require('es-abstract/2015/IteratorNext');
 const User = require('../models/user');
 const { analyseError } = require('../utils/utils');
 
@@ -9,7 +10,7 @@ const getUsers = (req, res) => {
 
 const getUserById = (req, res) => {
   User.findById(req.params.userId)
-    .then(user => {if (data) res.send({ data: user }); return;})
+    .then(user => {if (user === null) next(); res.send({ data: user });})
     .catch(err => analyseError(res, err));
 };
 

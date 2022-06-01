@@ -22,8 +22,9 @@ const applyFictitiousAuthorization = (app) => {
 
 const analyseError = (res, err) => {
   const errorName = err.name;
+  console.log(errorName);
 
-  if (errorName === "ValidationError" || errorName === "BadRequest") {
+  if (errorName === "ValidationError" || errorName === "BadRequest" || errorName === "CastError") {
     return res
       .status(VALIDATION_ERROR_CODE)
       .send({
@@ -31,7 +32,7 @@ const analyseError = (res, err) => {
       });
   };
 
-  if (errorName === "NotFound") {
+  if (errorName === "NotFound" || errorName === "ReferenceError") {
     return res
       .status(NOT_FOUND_ERROR_CODE)
       .send({

@@ -28,8 +28,8 @@ const likeCard = (req, res) => {
     },
     {
       new: true,
-      runValidators: true,
-      upsert: false
+      // runValidators: true,
+      // upsert: false
     }
   )
     .then(card => res.send({ data: card }))
@@ -44,8 +44,8 @@ const unlikeCard = (req, res) => {
     },
     {
       new: true,
-      runValidators: true,
-      upsert: false
+      // runValidators: true,
+      // upsert: false
     }
   )
     .then(card => res.send({ data: card }))

@@ -16,7 +16,7 @@ const createCard = (req, res) => {
 
 const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
-    .then(card => res.send({ data: card }))
+    .then(card => {if (card === null) next(); res.send({ data: card });})
     .catch(err => analyseError(res, err));
 };
 
@@ -32,7 +32,7 @@ const likeCard = (req, res) => {
       // upsert: false
     }
   )
-    .then(card => res.send({ data: card }))
+    .then(card => {if (card === null) next(); res.send({ data: card });})
     .catch(err => analyseError(res, err));
 };
 
@@ -48,7 +48,7 @@ const unlikeCard = (req, res) => {
       // upsert: false
     }
   )
-    .then(card => res.send({ data: card }))
+    .then(card => {if (card === null) next(); res.send({ data: card });})
     .catch(err => analyseError(res, err));
 };
 

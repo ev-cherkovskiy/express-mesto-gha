@@ -6,7 +6,7 @@ const { analyseError } = require('../utils/utils');
 const getCards = (req, res) => {
   Card.find({})
     .then(cards => res.send({ data: cards }))
-    .catch(err => analyseError(res, err));
+    .catch(err => res.send({ message: err.message }));
 };
 
 // Создание новой карточки
@@ -14,7 +14,7 @@ const createCard = (req, res) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
     .then(card => res.send({ data: card }))
-    .catch(err => analyseError(res, err));
+    .catch(err => res.send({ message: err.message }));
 };
 
 // Удаление карточки
@@ -27,7 +27,7 @@ const deleteCard = (req, res) => {
       // если эта карточка была создана пользователем
       if (req.user._id === card.owner) res.send({ data: card });
     })
-    .catch(err => analyseError(res, err));
+    .catch(err => res.send({ message: err.message }));
 };
 
 // Проставление лайка карточке
@@ -47,7 +47,7 @@ const likeCard = (req, res) => {
       // Иначе возвращаем объект с информацией о карточке
       res.send({ data: card });
     })
-    .catch(err => analyseError(res, err));
+    .catch(err => res.send({ message: err.message }));
 };
 
 // Удаление лайка карточки
@@ -67,7 +67,7 @@ const unlikeCard = (req, res) => {
       // Иначе возвращаем объект с информацией о карточке
       res.send({ data: card });
     })
-    .catch(err => analyseError(res, err));
+    .catch(err => res.send({ message: err.message }));
 };
 
 // Экспорт всех контроллеров

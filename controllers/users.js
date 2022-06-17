@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const getUsers = (req, res) => {
   User.find({})
     .then(users => res.send({ data: users }))
-    .catch(err => analyseError(res, err));
+    .catch(err => res.send({ message: err.message }));
 };
 
 // Получение информации о пользователе
@@ -20,7 +20,7 @@ const getUserById = (req, res) => {
       // Иначе возвращаем объект с информацией о пользователе
       res.send({ data: user });
     })
-    .catch(err => analyseError(res, err));
+    .catch(err => res.send({ message: err.message }));
 };
 
 // Создание нового пользователя
@@ -30,7 +30,7 @@ const createUser = (req, res) => {
     .then(hash => {
       User.create({ name, about, avatar, email, password: hash })
         .then(user => res.send({ data: user }))
-        .catch(err => analyseError(res, err));
+        .catch(err => res.send({ message: err.message }));
     })
 };
 
@@ -50,7 +50,7 @@ const editProfile = (req, res) => {
     }
   )
     .then(user => res.send({ data: user }))
-    .catch(err => analyseError(res, err));
+    .catch(err => res.send({ message: err.message }));
 };
 
 // Редактирование аватара пользователя
@@ -68,7 +68,7 @@ const editAvatar = (req, res) => {
     }
   )
     .then(user => res.send({ data: user }))
-    .catch(err => analyseError(res, err));
+    .catch(err => res.send({ message: err.message }));
 };
 
 

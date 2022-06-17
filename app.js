@@ -39,7 +39,7 @@ app.use(cookieParser());
 applyBodyParser(app);
 
 //
-app.use(errors());
+
 
 
 // 2) Применить фиктивную авторизацию (временное решение)
@@ -76,7 +76,7 @@ app.use('/cards', cardsRouter);
 // 5) Применить проверку на неправильный путь
 applyIncorrectPathCheck(app);
 
-
+app.use(errors());
 
 
 // Запуск приложения

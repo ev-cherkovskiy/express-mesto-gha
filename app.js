@@ -8,7 +8,7 @@ const cookieParser = require('cookie-parser');
 const auth = require('./middlewares/auth');
 
 //
-const { errors } = require('celebrate');
+const { errors, Joi, celebrate } = require('celebrate');
 
 // Импорт вспомогательных функций
 const {
@@ -45,8 +45,27 @@ app.use(errors());
 // 2) Применить фиктивную авторизацию (временное решение)
 // applyFictitiousAuthorization(app);
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post(
+  '/signin',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required(),
+      password: Joi.string().required().min(6),
+    })
+  }),
+  login
+);
+
+app.post(
+  '/signup',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required(),
+      password: Joi.string().required().min(6),
+    })
+  }),
+  createUser
+);
 
 app.use(auth);
 

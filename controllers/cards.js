@@ -1,6 +1,5 @@
-// Импорт модели карточки и функции обработки ошибок
+// Импорт модели карточки
 const Card = require('../models/card');
-const { analyseError } = require('../utils/utils');
 
 // Получение массива карточек
 const getCards = (req, res) => {

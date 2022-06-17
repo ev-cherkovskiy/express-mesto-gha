@@ -5,7 +5,6 @@ const { celebrate, Joi } = require('celebrate');
 const {
   getUsers,
   getUserById,
-  // createUser,
   editProfile,
   editAvatar,
   getUserInfo

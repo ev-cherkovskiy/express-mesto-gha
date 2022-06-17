@@ -13,7 +13,7 @@ const applyBodyParser = (app) => {
   app.use(bodyParser.urlencoded({ extended: true }));
 };
 
-// Функция, применяющая к приложению фиктивную авторизацию
+// Функция, применяющая к приложению фиктивную авторизацию -- не используется
 const applyFictitiousAuthorization = (app) => {
   app.use((req, res, next) => {
     req.user = {
@@ -34,7 +34,7 @@ const applyIncorrectPathCheck = (app) => {
   });
 };
 
-// Функция, анализирующая ошибки
+// Функция, анализирующая ошибки -- не используется
 const analyseError = (res, err) => {
   const errorName = err.name;
   // console.log(errorName);
@@ -62,7 +62,7 @@ const analyseError = (res, err) => {
 // Экспорт всех вспомогательных функций
 module.exports = {
   applyBodyParser,
-  applyFictitiousAuthorization,
+  // applyFictitiousAuthorization,
   applyIncorrectPathCheck,
-  analyseError
+  // analyseError
 };

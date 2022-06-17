@@ -1,6 +1,4 @@
-// Импорт модели пользователя и функции обработки ошибок
 const User = require('../models/user');
-const { analyseError } = require('../utils/utils');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -12,7 +10,7 @@ const getUsers = (req, res) => {
 };
 
 // Получение информации о пользователе
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .then(user => {
       // Если пользователя с таким айди нет, то идём дальше -- в блок обработки ошибок
@@ -29,7 +27,10 @@ const createUser = (req, res) => {
   bcrypt.hash(password, 10)
     .then(hash => {
       User.create({ name, about, avatar, email, password: hash })
-        .then(user => res.send({ data: user }))
+        .then(user => {
+          const { name, about, avatar, email } = user;
+          res.send({ data: { name, about, avatar, email } });
+        })
         .catch(err => res.send({ message: err.message }));
     })
 };
@@ -72,13 +73,15 @@ const editAvatar = (req, res) => {
 };
 
 
-
+// Вход в систему
 const login = (req, res) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then(user => {
+      console.log(user);
       // create jwt
       const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
+      console.log(token);
       res
         .cookie('jwt', token, {
           maxAge: 3600000 * 24 * 7,
@@ -93,6 +96,7 @@ const login = (req, res) => {
     });
 };
 
+// Получение информации о текущем пользователе
 const getUserInfo = (req, res) => {
   User.findById(req.user._id)
     .then(user => {
@@ -102,8 +106,6 @@ const getUserInfo = (req, res) => {
       res.status(500).send({ message: err.message });
     });
 };
-
-
 
 // Экспорт всех контроллеров
 module.exports = {

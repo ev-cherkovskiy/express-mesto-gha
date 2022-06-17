@@ -1,50 +1,35 @@
 // Подключение Express и Mongoose
 const express = require('express');
 const mongoose = require('mongoose');
-
-//
+// Подключение парсера куки
 const cookieParser = require('cookie-parser');
-//
+// Подключение мидлвэра с авторизацией
 const auth = require('./middlewares/auth');
-
-//
+// Подключение celebrate
 const { errors, Joi, celebrate } = require('celebrate');
 
+// Импорт функций входа в систему и создания пользователя
+const { login, createUser } = require('./controllers/users');
 // Импорт вспомогательных функций
 const {
   applyBodyParser,
-  // applyFictitiousAuthorization,
   applyIncorrectPathCheck
 } = require('./utils/utils');
-
 // Импорт роутов
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 
-//
-const { login, createUser } = require('./controllers/users');
-
 // Инициация приложения и порта подключения
 const app = express();
 const { PORT = 3000 } = process.env;
-
 // Подключение БД
 mongoose.connect('mongodb://localhost:27017/mestodb');
 
-//
+// Использовать куки парсер
 app.use(cookieParser());
-
-// Обработка запросов
-// 1) Применить парсер тела запроса
+// Применить парсер тела запроса
 applyBodyParser(app);
-
-//
-
-
-
-// 2) Применить фиктивную авторизацию (временное решение)
-// applyFictitiousAuthorization(app);
-
+// Использовать роутинг для входа в систему
 app.post(
   '/signin',
   celebrate({
@@ -55,7 +40,7 @@ app.post(
   }),
   login
 );
-
+// Использовать роутинг для регистрации
 app.post(
   '/signup',
   celebrate({
@@ -66,18 +51,16 @@ app.post(
   }),
   createUser
 );
-
+// Использовать мидлвэр с авторизацией
 app.use(auth);
-
-// 3) Подключить роутинг, связанный с юзер-запросами
+// Подключить роутинг, связанный с юзер-запросами
 app.use('/users', usersRouter);
-// 4) Подключить роутинг, связанный с запросами карточек
+// Подключить роутинг, связанный с запросами карточек
 app.use('/cards', cardsRouter);
-// 5) Применить проверку на неправильный путь
+// Применить проверку на неправильный путь
 applyIncorrectPathCheck(app);
-
+// Использовать вывод ошибок с помощью celebrate
 app.use(errors());
-
 
 // Запуск приложения
 app.listen(PORT, () => {

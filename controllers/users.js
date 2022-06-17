@@ -1,6 +1,8 @@
 // Импорт модели пользователя и функции обработки ошибок
 const User = require('../models/user');
 const { analyseError } = require('../utils/utils');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // Получение массива всех пользователей
 const getUsers = (req, res) => {
@@ -23,10 +25,13 @@ const getUserById = (req, res) => {
 
 // Создание нового пользователя
 const createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
-    .then(user => res.send({ data: user }))
-    .catch(err => analyseError(res, err));
+  const { name, about, avatar, email, password } = req.body;
+  bcrypt.hash(password, 10)
+    .then(hash => {
+      User.create({ name, about, avatar, email, password: hash })
+        .then(user => res.send({ data: user }))
+        .catch(err => analyseError(res, err));
+    })
 };
 
 // Редактирование имени и описания пользователя
@@ -66,11 +71,47 @@ const editAvatar = (req, res) => {
     .catch(err => analyseError(res, err));
 };
 
+
+
+const login = (req, res) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then(user => {
+      // create jwt
+      const token = jwt.sign({ _id: user._id }, '', { expiresIn: '7d' });
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true
+        })
+        .end();
+      // res.send(token);
+
+    })
+    .catch(err => {
+      res.status(401).send({ message: err.message });
+    });
+};
+
+const getUserInfo = (req, res) => {
+  User.findById(req.user._id)
+    .then(user => {
+      res.send({ data: user });
+    })
+    .catch(err => {
+      res.status(500).send({ message: err.message });
+    });
+};
+
+
+
 // Экспорт всех контроллеров
 module.exports = {
   getUsers,
   getUserById,
   createUser,
   editProfile,
-  editAvatar
+  editAvatar,
+  login,
+  getUserInfo
 };

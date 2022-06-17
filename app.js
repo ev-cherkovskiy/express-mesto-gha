@@ -7,6 +7,9 @@ const cookieParser = require('cookie-parser');
 //
 const auth = require('./middlewares/auth');
 
+//
+const { errors } = require('celebrate');
+
 // Импорт вспомогательных функций
 const {
   applyBodyParser,
@@ -34,6 +37,9 @@ app.use(cookieParser());
 // Обработка запросов
 // 1) Применить парсер тела запроса
 applyBodyParser(app);
+
+//
+app.use(errors());
 
 
 // 2) Применить фиктивную авторизацию (временное решение)

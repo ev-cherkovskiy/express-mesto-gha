@@ -6,7 +6,7 @@ const {
   ServerError,
   NotFoundError,
   ConflictError,
-  BadRequestError,
+  UnauthorizedError,
 } = require('../utils/errors');
 
 // Получение массива всех пользователей
@@ -128,24 +128,18 @@ const editAvatar = (req, res, next) => {
 const login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
-    .orFail(() => {
-      throw new BadRequestError('Указана неправильная почта или пароль');
-    })
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
       res.cookie('jwt', token, {
         maxAge: 3600000 * 24 * 7,
         httpOnly: true,
       });
-      next();
-      // .status(200).send({ data: { message: 'Вход выполнен'}})
-      // res.send({ message: 'Вход выполнен' });
     })
     .then(() => {
       res.send({ message: 'Вход выполнен' });
     })
     .catch((err) => {
-      next(err);
+      next(new UnauthorizedError(err.message));
     });
 };
 

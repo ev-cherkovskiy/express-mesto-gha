@@ -16,6 +16,7 @@ const applyIncorrectPathCheck = (app) => {
   });
 };
 
+// Кастомная валидация ссылки
 const validateURL = (value) => {
   if (!isURL(value, { require_protocol: true })) {
     throw new Error('Неправильный формат ссылки');
@@ -23,6 +24,7 @@ const validateURL = (value) => {
   return value;
 };
 
+// Кастомная валидация почты
 const validateEmail = (value) => {
   if (!isEmail(value, { require_protocol: true })) {
     throw new Error('Неправильный формат почты');

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { isURL } = require('validator');
 
 // Описание схемы карточки
 const cardSchema = new mongoose.Schema({
@@ -6,25 +7,31 @@ const cardSchema = new mongoose.Schema({
     type: String,
     minlength: 2,
     maxlength: 30,
-    required: true
+    required: true,
   },
   link: {
     type: String,
-    required: true
+    required: true,
+    validate: {
+      validator(v) {
+        return isURL(v);
+      },
+      message: 'Необходимо ввести корректный url',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
-    required: true
+    required: true,
   },
   likes: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'user'
+    ref: 'user',
   }],
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 // Создание и экспорт модели карточки

@@ -1,109 +1,161 @@
-const User = require('../models/user');
+/* eslint-disable no-shadow */
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const User = require('../models/user');
+const {
+  ServerError,
+  NotFoundError,
+  ConflictError,
+  BadRequestError,
+} = require('../utils/errors');
 
 // Получение массива всех пользователей
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
-    .then(users => res.send({ data: users }))
-    .catch(err => res.send({ message: err.message }));
+    .orFail(() => {
+      throw new ServerError('Невозможно загрузить массив пользователей');
+    })
+    .then((users) => {
+      res.send({ data: users });
+    })
+    .catch((err) => {
+      next(err);
+    });
 };
 
 // Получение информации о пользователе
 const getUserById = (req, res, next) => {
   User.findById(req.params.userId)
-    .then(user => {
-      // Если пользователя с таким айди нет, то идём дальше -- в блок обработки ошибок
-      if (user === null) next();
-      // Иначе возвращаем объект с информацией о пользователе
+    .orFail(() => {
+      throw new NotFoundError('Пользователя с таким id не найдено');
+    })
+    .then((user) => {
       res.send({ data: user });
     })
-    .catch(err => res.send({ message: err.message }));
+    .catch((err) => {
+      next(err);
+    });
 };
 
 // Создание нового пользователя
-const createUser = (req, res) => {
-  const { name, about, avatar, email, password } = req.body;
-  bcrypt.hash(password, 10)
-    .then(hash => {
-      User.create({ name, about, avatar, email, password: hash })
-        .then(user => {
-          const { name, about, avatar, email } = user;
-          res.send({ data: { name, about, avatar, email } });
-        })
-        .catch(err => res.send({ message: err.message }));
+const createUser = (req, res, next) => {
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
+  User.findOne({ email })
+    .then((user) => {
+      if (user) {
+        next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
+      }
+      return bcrypt.hash(password, 10);
     })
+    .then((hash) => {
+      User.create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hash,
+      })
+        .then((user) => {
+          const {
+            name,
+            about,
+            avatar,
+            email,
+          } = user;
+          res.send({
+            data: {
+              name,
+              about,
+              avatar,
+              email,
+            },
+          });
+        })
+        .catch((err) => {
+          next(err);
+        });
+    });
 };
 
 // Редактирование имени и описания пользователя
-const editProfile = (req, res) => {
+const editProfile = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
     {
       name,
-      about
+      about,
     },
     {
       new: true,
       runValidators: true,
-      upsert: true
-    }
+      upsert: true,
+    },
   )
-    .then(user => res.send({ data: user }))
-    .catch(err => res.send({ message: err.message }));
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      next(err);
+    });
 };
 
 // Редактирование аватара пользователя
-const editAvatar = (req, res) => {
+const editAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
     {
-      avatar
+      avatar,
     },
     {
       new: true,
       runValidators: true,
-      upsert: true
-    }
+      upsert: true,
+    },
   )
-    .then(user => res.send({ data: user }))
-    .catch(err => res.send({ message: err.message }));
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      next(err);
+    });
 };
 
-
 // Вход в систему
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
-    .then(user => {
-      console.log(user);
-      // create jwt
+    .orFail(() => {
+      throw new BadRequestError('Указана неправильная почта или пароль');
+    })
+    .then((user) => {
       const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
-      console.log(token);
       res
         .cookie('jwt', token, {
           maxAge: 3600000 * 24 * 7,
-          httpOnly: true
+          httpOnly: true,
         })
-        .end();
-      // res.send(token);
-
+        .send({ message: 'Вход выполнен' });
     })
-    .catch(err => {
-      res.status(401).send({ message: err.message });
+    .catch((err) => {
+      next(err);
     });
 };
 
 // Получение информации о текущем пользователе
-const getUserInfo = (req, res) => {
+const getUserInfo = (req, res, next) => {
   User.findById(req.user._id)
-    .then(user => {
+    .orFail(() => {
+      throw new NotFoundError('Пользователя с таким id не найдено');
+    })
+    .then((user) => {
       res.send({ data: user });
     })
-    .catch(err => {
-      res.status(500).send({ message: err.message });
+    .catch((err) => {
+      next(err);
     });
 };
 
@@ -115,5 +167,5 @@ module.exports = {
   editProfile,
   editAvatar,
   login,
-  getUserInfo
+  getUserInfo,
 };

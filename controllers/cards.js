@@ -1,72 +1,99 @@
 // Импорт модели карточки
 const Card = require('../models/card');
+const {
+  ServerError,
+  NotFoundError,
+  ForbiddenError,
+} = require('../utils/errors');
 
 // Получение массива карточек
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
-    .then(cards => res.send({ data: cards }))
-    .catch(err => res.send({ message: err.message }));
+    .orFail(() => {
+      throw new ServerError('Невозможно загрузить карточки');
+    })
+    .then((cards) => {
+      res.send({ data: cards });
+    })
+    .catch((err) => {
+      next(err);
+    });
 };
 
 // Создание новой карточки
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
-    .then(card => res.send({ data: card }))
-    .catch(err => res.send({ message: err.message }));
+    .then((card) => {
+      res.send({ data: card });
+    })
+    .catch((err) => {
+      next(err);
+    });
 };
 
 // Удаление карточки
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
-    .then(card => {
-      // Если карточки с таким айди нет, то идём дальше -- в блок обработки ошибок
-      if (card === null) next();
-      // Иначе возвращаем объект с информацией об удалённой карточке в случае,
-      // если эта карточка была создана пользователем
-      if (req.user._id === card.owner) res.send({ data: card });
+    .orFail(() => {
+      throw new NotFoundError('Карточки с таким id не найдено');
     })
-    .catch(err => res.send({ message: err.message }));
+    .then((card) => {
+      if (req.user._id !== card.owner) {
+        throw new ForbiddenError('Невозможно удалить карточку, созданную другим пользователем');
+      }
+      card.remove()
+        .then(() => {
+          res.send({ message: 'Карточка удалена' });
+        });
+    })
+    .catch((err) => {
+      next(err);
+    });
 };
 
 // Проставление лайка карточке
-const likeCard = (req, res) => {
+const likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     {
-      $addToSet: { likes: req.user._id }
+      $addToSet: { likes: req.user._id },
     },
     {
       new: true,
-    }
+    },
   )
-    .then(card => {
-      // Если карточки с таким айди нет, то идём дальше -- в блок обработки ошибок
-      if (card === null) next();
-      // Иначе возвращаем объект с информацией о карточке
+    .orFail(() => {
+      throw new NotFoundError('Карточки с таким id не найдено');
+    })
+    .then((card) => {
       res.send({ data: card });
     })
-    .catch(err => res.send({ message: err.message }));
+    .catch((err) => {
+      next(err);
+    });
 };
 
 // Удаление лайка карточки
-const unlikeCard = (req, res) => {
+const unlikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     {
-      $pull: { likes: req.user._id }
+      $pull: { likes: req.user._id },
     },
     {
       new: true,
-    }
+    },
   )
-    .then(card => {
-      // Если карточки с таким айди нет, то идём дальше -- в блок обработки ошибок
-      if (card === null) next();
-      // Иначе возвращаем объект с информацией о карточке
+    .orFail(() => {
+      throw new NotFoundError('Карточки с таким id не найдено');
+    })
+    .then((card) => {
       res.send({ data: card });
     })
-    .catch(err => res.send({ message: err.message }));
+    .catch((err) => {
+      next(err);
+    });
 };
 
 // Экспорт всех контроллеров
@@ -75,5 +102,5 @@ module.exports = {
   createCard,
   deleteCard,
   likeCard,
-  unlikeCard
+  unlikeCard,
 };

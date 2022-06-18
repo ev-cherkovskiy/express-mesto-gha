@@ -3,17 +3,18 @@ const express = require('express');
 const mongoose = require('mongoose');
 // Подключение парсера куки
 const cookieParser = require('cookie-parser');
-// Подключение мидлвэра с авторизацией
-const auth = require('./middlewares/auth');
 // Подключение celebrate
 const { errors, Joi, celebrate } = require('celebrate');
+// Подключение мидлвэра с авторизацией
+const auth = require('./middlewares/auth');
 
 // Импорт функций входа в систему и создания пользователя
 const { login, createUser } = require('./controllers/users');
 // Импорт вспомогательных функций
 const {
   applyBodyParser,
-  applyIncorrectPathCheck
+  applyIncorrectPathCheck,
+  validateURL,
 } = require('./utils/utils');
 // Импорт роутов
 const usersRouter = require('./routes/users');
@@ -34,22 +35,25 @@ app.post(
   '/signin',
   celebrate({
     body: Joi.object().keys({
-      email: Joi.string().required(),
-      password: Joi.string().required().min(6),
-    })
+      email: Joi.string().required().email(),
+      password: Joi.string().required(),
+    }),
   }),
-  login
+  login,
 );
 // Использовать роутинг для регистрации
 app.post(
   '/signup',
   celebrate({
     body: Joi.object().keys({
-      email: Joi.string().required(),
-      password: Joi.string().required().min(6),
-    })
+      email: Joi.string().required().email(),
+      password: Joi.string().required(),
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(30),
+      avatar: Joi.string().custom(validateURL),
+    }),
   }),
-  createUser
+  createUser,
 );
 // Использовать мидлвэр с авторизацией
 app.use(auth);
@@ -61,8 +65,14 @@ app.use('/cards', cardsRouter);
 applyIncorrectPathCheck(app);
 // Использовать вывод ошибок с помощью celebrate
 app.use(errors());
+// Использовать централизованный обработчик ошибок
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  res.status(err.statusCode).send({ message: err.message });
+});
 
 // Запуск приложения
 app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
   console.log(`Приложение запущено на порте ${PORT}`);
 });

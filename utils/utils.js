@@ -1,11 +1,7 @@
 // Импорт парсера тела запроса
 const bodyParser = require('body-parser');
-// Импорт констант
-const {
-  VALIDATION_ERROR_CODE,
-  NOT_FOUND_ERROR_CODE,
-  OTHER_ERROR_CODE
-} = require('./constants');
+const { isEmail, isURL } = require('validator');
+const { NotFoundError } = require('./errors');
 
 // Функция, применяющая к приложению парсинг тела запроса
 const applyBodyParser = (app) => {
@@ -13,56 +9,31 @@ const applyBodyParser = (app) => {
   app.use(bodyParser.urlencoded({ extended: true }));
 };
 
-// Функция, применяющая к приложению фиктивную авторизацию -- не используется
-const applyFictitiousAuthorization = (app) => {
-  app.use((req, res, next) => {
-    req.user = {
-      _id: "629773170e9357dd0d53447b"
-    };
-    next();
-  });
-};
-
 // Функция, применяющая к приложению проверку на неправильный путь
 const applyIncorrectPathCheck = (app) => {
-  app.use((req, res) => {
-    res
-      .status(NOT_FOUND_ERROR_CODE)
-      .send({
-        message: "Данные не найдены"
-      });
+  app.use((req, res, next) => {
+    next(new NotFoundError('Неправильный путь'));
   });
 };
 
-// Функция, анализирующая ошибки -- не используется
-const analyseError = (res, err) => {
-  const errorName = err.name;
-  // console.log(errorName);
-  if (errorName === "ValidationError" || errorName === "BadRequest" || errorName === "CastError") {
-    return res
-      .status(VALIDATION_ERROR_CODE)
-      .send({
-        message: "Переданы некорректные данные"
-      });
-  };
-  if (errorName === "NotFound" || errorName === "ReferenceError") {
-    return res
-      .status(NOT_FOUND_ERROR_CODE)
-      .send({
-        message: "Данные не найдены"
-      });
-  };
-  return res
-    .status(OTHER_ERROR_CODE)
-    .send({
-      message: "Возникла ошибка на стороне сервера"
-    });
+const validateURL = (value) => {
+  if (!isURL(value, { require_protocol: true })) {
+    throw new Error('Неправильный формат ссылки');
+  }
+  return value;
+};
+
+const validateEmail = (value) => {
+  if (!isEmail(value, { require_protocol: true })) {
+    throw new Error('Неправильный формат почты');
+  }
+  return value;
 };
 
 // Экспорт всех вспомогательных функций
 module.exports = {
   applyBodyParser,
-  // applyFictitiousAuthorization,
   applyIncorrectPathCheck,
-  // analyseError
+  validateURL,
+  validateEmail,
 };

@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
+const { validateURL } = require('../utils/utils');
 
 // Импорт контроллеров
 const {
@@ -7,21 +8,23 @@ const {
   getUserById,
   editProfile,
   editAvatar,
-  getUserInfo
-} = require('../controllers/users')
+  getUserInfo,
+} = require('../controllers/users');
 
 // Описание роутинга
 
 router.get('/', getUsers);
 
+router.get('/me', getUserInfo);
+
 router.get(
   '/:userId',
   celebrate({
     params: Joi.object().keys({
-      userId: Joi.string().alphanum().length(24)
-    })
+      userId: Joi.string().length(24).hex().required(),
+    }),
   }),
-  getUserById
+  getUserById,
 );
 
 router.patch(
@@ -30,22 +33,20 @@ router.patch(
     body: Joi.object().keys({
       name: Joi.string().required().min(2).max(30),
       about: Joi.string().required().min(2).max(30),
-    })
+    }),
   }),
-  editProfile
+  editProfile,
 );
 
 router.patch(
   '/me/avatar',
   celebrate({
     body: Joi.object().keys({
-      avatar: Joi.string().required(),
-    })
+      avatar: Joi.string().required().custom(validateURL),
+    }),
   }),
-  editAvatar
+  editAvatar,
 );
-
-router.get('/me', getUserInfo);
 
 // Экспорт роутинга
 module.exports = router;

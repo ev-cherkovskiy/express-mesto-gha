@@ -133,12 +133,16 @@ const login = (req, res, next) => {
     })
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
-      res
-        .cookie('jwt', token, {
-          maxAge: 3600000 * 24 * 7,
-          httpOnly: true,
-        })
-        .send({ message: 'Вход выполнен' });
+      res.cookie('jwt', token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+      });
+      next();
+      // .status(200).send({ data: { message: 'Вход выполнен'}})
+      // res.send({ message: 'Вход выполнен' });
+    })
+    .then(() => {
+      res.send({ message: 'Вход выполнен' });
     })
     .catch((err) => {
       next(err);

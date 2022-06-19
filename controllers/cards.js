@@ -1,17 +1,13 @@
 // Импорт модели карточки
 const Card = require('../models/card');
-const {
-  ServerError,
-  NotFoundError,
-  ForbiddenError,
-} = require('../utils/errors');
+// Импорт классов ошибок
+const NotFoundError = require('../errors/NotFoundError');
+const ForbiddenError = require('../errors/ForbiddenError');
+const BadRequestError = require('../errors/BadRequestError');
 
 // Получение массива карточек
 const getCards = (req, res, next) => {
   Card.find({})
-    .orFail(() => {
-      throw new ServerError('Невозможно загрузить карточки');
-    })
     .then((cards) => {
       res.send({ data: cards });
     })
@@ -28,21 +24,25 @@ const createCard = (req, res, next) => {
       res.send({ data: card });
     })
     .catch((err) => {
-      next(err);
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Некорректные данные'));
+      } else {
+        next(err);
+      }
     });
 };
 
 // Удаление карточки
 const deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .orFail(() => {
       throw new NotFoundError('Карточки с таким id не найдено');
     })
     .then((card) => {
-      if (req.user._id !== card.owner) {
+      if (!card.owner.equals(req.user._id)) {
         throw new ForbiddenError('Невозможно удалить карточку, созданную другим пользователем');
       }
-      card.remove()
+      return card.remove()
         .then(() => {
           res.send({ message: 'Карточка удалена' });
         });

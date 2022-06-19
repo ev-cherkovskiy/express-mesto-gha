@@ -2,19 +2,15 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const {
-  ServerError,
-  NotFoundError,
-  ConflictError,
-  UnauthorizedError,
-} = require('../utils/errors');
+// Импорт классов ошибок
+const NotFoundError = require('../errors/NotFoundError');
+const ConflictError = require('../errors/ConflictError');
+const UnauthorizedError = require('../errors/UnauthorizedError');
+const BadRequestError = require('../errors/BadRequestError');
 
 // Получение массива всех пользователей
 const getUsers = (req, res, next) => {
   User.find({})
-    .orFail(() => {
-      throw new ServerError('Невозможно загрузить массив пользователей');
-    })
     .then((users) => {
       res.send({ data: users });
     })
@@ -78,9 +74,14 @@ const createUser = (req, res, next) => {
           });
         })
         .catch((err) => {
-          next(err);
+          if (err.name === 'ValidationError') {
+            next(new BadRequestError('Некорректные данные'));
+          } else {
+            next(err);
+          }
         });
-    });
+    })
+    .catch(next);
 };
 
 // Редактирование имени и описания пользователя
@@ -95,12 +96,15 @@ const editProfile = (req, res, next) => {
     {
       new: true,
       runValidators: true,
-      upsert: true,
     },
   )
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      next(err);
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Некорректные данные'));
+      } else {
+        next(err);
+      }
     });
 };
 
@@ -115,12 +119,15 @@ const editAvatar = (req, res, next) => {
     {
       new: true,
       runValidators: true,
-      upsert: true,
     },
   )
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      next(err);
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Некорректные данные'));
+      } else {
+        next(err);
+      }
     });
 };
 

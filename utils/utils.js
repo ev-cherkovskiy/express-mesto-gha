@@ -1,7 +1,6 @@
-// Импорт парсера тела запроса
 const bodyParser = require('body-parser');
 const { isEmail, isURL } = require('validator');
-const { NotFoundError } = require('./errors');
+const NotFoundError = require('../errors/NotFoundError');
 
 // Функция, применяющая к приложению парсинг тела запроса
 const applyBodyParser = (app) => {
